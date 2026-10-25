@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b2430">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AVA Driver">
+<title>AVA Driver</title>
+<script src="config.js"></script>
+<style>
+:root{--ink:#1b2430;--bg:#f4f5f7;--card:#fff;--line:#dfe3e8;--muted:#667085;--amber:#f2b705;--green:#0f6b6f;--red:#b42318}
+@media (prefers-color-scheme:dark){:root{--ink:#e8ecf1;--bg:#12161c;--card:#1b222b;--line:#323c49;--muted:#9aa5b4;--green:#4fc3c8;--red:#ff8a7e}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font:17px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:30px}
+header{background:#1b2430;color:#fff;padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top,0px));border-bottom:4px solid var(--amber);display:flex;align-items:center;gap:10px}
+header b{flex:1;font-size:19px}
+header button{margin-left:6px;background:none;border:1px solid #fff5;color:#fff;border-radius:8px;padding:8px 12px;font:inherit;font-size:15px}
+#st{padding:7px 14px;font-size:14px;font-weight:600;text-align:center;background:#d8f0e6;color:#0b5a3a}
+#st.off{background:#fbe0dd;color:#b42318}#st.wait{background:#fdf0c4;color:#7a5b00}
+main{padding:14px;max-width:560px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 4px;font-size:19px}
+.muted{color:var(--muted);font-size:15px}
+.route{font-size:18px;margin:6px 0}
+.tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:14px;background:#fdf0c4;color:#7a5b00}
+.tag.go{background:#d3ecf0;color:#0b4f54}.tag.done{background:#d8f0e6;color:#0b5a3a}
+button.big{width:100%;min-height:54px;border:0;border-radius:12px;background:var(--amber);color:#1b2430;font:700 18px system-ui,sans-serif;margin-top:10px}
+button.big.alt{background:var(--green);color:#fff}
+button.big.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+label{display:block;margin:12px 0 4px;color:var(--muted);font-size:15px}
+input,select,textarea{width:100%;min-height:52px;padding:12px;font:inherit;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+textarea{min-height:110px}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid #2f5d8a;outline-offset:1px}
+nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{border:0;background:none;padding:10px 2px 8px;font:600 14px system-ui,sans-serif;color:var(--muted);min-height:60px}
+nav button.on{color:var(--ink);box-shadow:inset 0 3px 0 var(--amber)}
+nav span{display:block;font-size:22px;line-height:1.1}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.tile{min-height:104px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:700 17px system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.tile span{font-size:32px;line-height:1}
+.tile:active{background:var(--amber);color:#1b2430}
+h2.sec{font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:6px 2px 10px}
+#modal{position:fixed;inset:0;background:var(--bg);z-index:20;overflow-y:auto;display:none;padding-bottom:30px}
+#modal .bar{position:sticky;top:0;background:#1b2430;color:#fff;padding:14px 16px;padding-top:calc(14px + env(safe-area-inset-top,0px));display:flex;align-items:center;border-bottom:4px solid var(--amber)}
+#modal .bar b{flex:1;font-size:19px}
+#modal .bar button{background:none;border:1px solid #fff5;color:#fff;border-radius:8px;padding:8px 14px;font:inherit;font-size:15px}
+#modal form,#modal .body{padding:14px;max-width:560px;margin:0 auto}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.seg button{min-height:52px;border:2px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:700 16px system-ui,sans-serif}
+.seg button.on{border-color:var(--amber);background:var(--amber);color:#1b2430}
+.photo img{width:100%;border-radius:10px;margin-top:10px;display:block}
+input[readonly]{font-weight:700;background:var(--card)}
+.warn{margin-top:10px;padding:12px;border-radius:10px;background:#fdf0c4;color:#5c4400;border:1px solid #e0b300}
+.chip{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--green);border-radius:12px;background:var(--card)}
+.chip b{font-size:22px}.chip span{flex:1;font-size:14px;color:var(--muted)}
+.chip button{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 12px;font:inherit;font-size:15px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.empty{text-align:center;color:var(--muted);padding:34px 10px}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:#1b2430;color:#fff;padding:12px 18px;border-radius:10px;display:none;z-index:9;max-width:90vw}
+</style>
+</head>
+<body>
+<header><b id="hd">AVA Driver</b><button id="inst" style="display:none" onclick="installApp()">Install</button><button id="out" style="display:none" onclick="logout()">Log out</button></header>
+<div id="st" style="display:none"></div>
+<main id="main"><div class="empty">Loading…</div></main>
+<div id="modal"></div>
+<div id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* Talks to the Google Apps Script backend (URL is set in config.js) */
+async function run(fn, ...args){
+  if (!window.AVA_API || /PASTE_/.test(window.AVA_API)) throw new Error('App is not set up: add the Apps Script URL in config.js');
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 90000);
+  let j;
+  try {
+    const res = await fetch(window.AVA_API, {method: 'POST', headers: {'Content-Type': 'text/plain;charset=utf-8'}, body: JSON.stringify({fn, args}), redirect: 'follow', signal: ctl.signal});
+    j = await res.json();
+  } catch(e) {throw new Error('Network error')}
+  finally {clearTimeout(timer)}
+  if (!j.ok) throw new Error(j.error || 'Error');
+  return j.data;
+}
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}, del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const APP_VERSION = 'v1.1';
+let S = null, fin = null, syncing = false, M = null, photos = {}, SCREEN = 'Home';
+const noteErr = m => {try {const a = JSON.parse(store.get('ava_errs') || '[]'); a.unshift(new Date().toTimeString().slice(0, 5) + ' ' + String(m).slice(0, 80)); store.set('ava_errs', JSON.stringify(a.slice(0, 6)))} catch(e) {}};
+window.addEventListener('error', e => noteErr(e.message));
+window.addEventListener('unhandledrejection', e => noteErr((e.reason && e.reason.message) || e.reason));
+
+const Q = () => {try {return JSON.parse(store.get('ava_q') || '[]')} catch(e) {return []}};
+const setQ = q => store.set('ava_q', JSON.stringify(q));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const nowHM = () => new Date().toTimeString().slice(0, 5);
+const todayStr = () => new Date(Date.now() - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10);
+const cache = () => store.set('ava_cache', JSON.stringify(S));
+const msg = e => (e && e.message || String(e)).replace(/^Error:\s*/, '');
+function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(()=>t.style.display='none',3000)}
+
+const LOG = () => {try {return JSON.parse(store.get('ava_log') || '[]')} catch(e) {return []}};
+function addLog(rid, label){store.set('ava_log', JSON.stringify([{rid, label, at: nowHM(), day: todayStr()}].concat(LOG()).slice(0, 15)))}
+function logHtml(){
+  const pend = new Set(Q().map(i => i.rid)), L = LOG().filter(x => x.day === todayStr()).slice(0, 8);
+  if (!L.length) return '';
+  return '<h2 class="sec">Today\'s entries</h2><div class="card" style="padding:6px 14px">' + L.map(x => `<div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)"><span>${pend.has(x.rid) ? '⏳' : '✅'}</span><span style="flex:1">${esc(x.label)}<div class="muted">${x.at} · ${pend.has(x.rid) ? 'waiting for signal' : 'saved to Google Sheet'}</div></span></div>`).join('') + '</div>';
+}
+function status(){
+  const n = Q().length, on = navigator.onLine;
+  $('st').className = on ? (n ? 'wait' : 'ok') : 'off';
+  $('st').textContent = on ? (n ? `Online · syncing ${n} item${n > 1 ? 's' : ''}…` : 'Online · all saved') : `Offline · ${n ? n + ' saved on this phone, will sync later' : 'you can keep working'}`;
+}
+
+async function init(){
+  status();
+  let c = null; try {c = JSON.parse(store.get('ava_cache') || 'null')} catch(e) {}
+  if (c) {S = c; enter(); refresh(true); sync(); return}
+  try {loginView(await run('driverList'))}
+  catch(e) {$('main').innerHTML = '<div class="card"><h3>Internet needed</h3><div class="muted">Connect to the internet to log in the first time. After that the app works offline too.</div></div>'}
+}
+function loginView(names){
+  $('main').innerHTML = `<div class="card"><h3>Log in</h3>
+    <label>Your name</label><select id="nm">${names.map(n => `<option>${esc(n)}</option>`).join('')}</select>
+    <label>PIN</label><input id="pn" type="password" inputmode="numeric" autocomplete="off" maxlength="8">
+    <button class="big" onclick="doLogin()">Log in</button></div>` + (names.length ? '' : '<div class="empty">No drivers have a PIN yet. Ask the office to set one.</div>');
+}
+async function doLogin(){
+  const name = $('nm').value, pin = $('pn').value;
+  if (!navigator.onLine) return toast('Connect to the internet to log in');
+  try {const d = await run('driverData', name, pin); S = {name, pin, trips: d.trips, buses: d.buses, lastOdo: d.lastOdo || {}, lastCheckIn: d.lastCheckIn || null}; cache(); enter()}
+  catch(e) {toast(msg(e))}
+}
+function enter(){$('hd').textContent = S.name; $('out').style.display = ''; $('st').style.display = ''; home(); status()}
+function logout(){
+  if (Q().length) return toast('Please wait until everything is synced');
+  store.del('ava_cache'); location.reload();
+}
+
+function overlay(){
+  Q().filter(i => i.t === 'trip').forEach(i => {
+    const t = S.trips.find(x => x.ID === i.id); if (!t) return;
+    if (i.a === 'start') {t.Status = 'In Progress'; if (!t['Start Time']) t['Start Time'] = i.at}
+    else {t.Status = 'Completed'; t['End Time'] = i.at; if (i.km) t['Distance (km)'] = i.km}
+  });
+}
+async function refresh(silent){
+  if (!navigator.onLine) {if (!silent) toast('You are offline'); return}
+  try {
+    const d = await run('driverData', S.name, S.pin);
+    S.trips = d.trips; S.buses = d.buses; S.lastOdo = Object.assign({}, S.lastOdo || {}, d.lastOdo || {});
+    if (!S.lastCheckIn || (d.lastCheckIn && d.lastCheckIn.Date >= S.lastCheckIn.Date)) S.lastCheckIn = d.lastCheckIn || S.lastCheckIn; overlay(); cache();
+    if (!M && !fin) home();
+  } catch(e) {
+    if (/Wrong name or PIN/.test(msg(e))) {store.del('ava_cache'); location.reload()}
+    else if (!silent) toast(msg(e));
+  }
+}
+
+async function sync(){
+  if (syncing || !navigator.onLine || !S) return;
+  syncing = true; status();
+  try {
+    let q;
+    while ((q = Q()).length) {
+      const i = q[0];
+      try {
+        if (i.t === 'trip') await run('driverTrip', S.name, S.pin, i.id, i.a, i.km || '', i.at);
+        else await run('driverAdd', S.name, S.pin, i.k, i.obj, i.rid);
+      } catch(e) {
+        const m = msg(e);
+        if (!/Network error/.test(m)) noteErr('sync: ' + m);
+        if (/Wrong name or PIN/.test(m)) {toast('Your PIN was changed. Ask the office.'); break}
+        if (/Photo upload/.test(m)) {
+          i.tries = (i.tries || 0) + 1;
+          if (i.tries >= 6) {delete i.obj.OdoPhoto; delete i.obj.Receipt; i.obj.PhotoFailed = true; i.tries = 0}
+          const q2 = Q(); q2[0] = i; setQ(q2); break;
+        }
+        if (!/not found|Invalid|Unknown|required/.test(m)) break;   // network trouble: retry later
+      }
+      setQ(Q().slice(1)); status();
+    }
+  } finally {syncing = false; status()}
+  if (!Q().length) refresh(true);
+}
+window.addEventListener('online', () => {status(); sync()});
+window.addEventListener('offline', status);
+setInterval(() => {if (Q().length) sync(); status()}, 20000);
+
+/* ---------- dashboard ---------- */
+function home(){
+  SCREEN = 'Home';
+  const T = S.trips;
+  $('main').innerHTML = `<div class="tiles">
+    <button class="tile" onclick="openForm('CheckIn')"><span>✅</span>Daily check-in</button>
+    <button class="tile" onclick="openForm('Expense')"><span>🧾</span>Report expense</button>
+    <button class="tile" onclick="openForm('ExtraTrip')"><span>➕</span>Extra trip</button>
+    <button class="tile" onclick="openForm('Issues')"><span>⚠️</span>Report problem</button></div>
+    ${logHtml()}<h2 class="sec">My trips</h2>` + (T.length ? T.map(t => {
+    const st = t.Status === 'In Progress' ? 'go' : t.Status === 'Completed' ? 'done' : '';
+    let act = '';
+    if (t.Status === 'Scheduled') act = `<button class="big" onclick="tripAct('${t.ID}','start')">Start trip</button>`;
+    else if (t.Status === 'In Progress') act = fin === t.ID
+      ? `<label>Distance driven (km)</label><input id="km" type="number" inputmode="decimal"><button class="big alt" onclick="tripAct('${t.ID}','finish')">Confirm finish</button>`
+      : `<button class="big alt" onclick="fin='${t.ID}';home()">Finish trip</button>`;
+    return `<div class="card"><span class="tag ${st}">${esc(t.Status)}</span>
+      <h3 style="margin-top:8px">${esc(t.Customer)}</h3>
+      <div class="muted">${esc(t.Date)} ${esc(t['Start Time'])} · Bus ${esc(t.Bus)}</div>
+      <div class="route">${esc(t['Start Location'])} → ${esc(t['End Location'])}</div>${act}</div>`;
+  }).join('') : '<div class="empty" style="padding:16px">No trips assigned to you right now.</div>') +
+  `<button class="big ghost" style="min-height:46px" onclick="refresh(false)">Refresh trips</button>
+   <button class="big ghost" style="min-height:46px;border-style:dashed" onclick="openForm('Feedback')">Something confusing or not working? Tell us</button>`;
+}
+function tripAct(id, action){
+  const km = action === 'finish' ? (($('km') || {}).value || '') : '';
+  if (!setQ(Q().concat({t:'trip', id, a: action, km, at: nowHM(), rid: uid()}))) return toast('Phone storage is full. Connect and sync first.');
+  const tt = S.trips.find(x => x.ID === id); addLog(Q()[Q().length - 1].rid, (action === 'start' ? 'Trip started · ' : 'Trip finished · ') + (tt ? tt.Customer : ''));
+  overlay(); cache(); fin = null; home(); status();
+  toast(navigator.onLine ? (action === 'start' ? 'Trip started' : 'Trip finished') : 'Saved on phone, will sync when online');
+  sync();
+}
+
+/* ---------- photos (stamped with date and time) ---------- */
+/** Looks at a photo and returns null if it is fine, or what is wrong with it (dark, washed out, blurry). */
+function analyzeGray(g, w, h){
+  const hist = new Array(256).fill(0);
+  for (let i = 0; i < g.length; i++) hist[g[i]]++;
+  const pct = p => {let t = g.length * p, s = 0; for (let v = 0; v < 256; v++) {s += hist[v]; if (s >= t) return v} return 255};
+  const p1 = pct(.01), p99 = pct(.99), range = p99 - p1;
+  const gh = new Array(512).fill(0); let n = 0;
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+    const i = y * w + x, gx = g[i + 1] - g[i - 1], gy = g[i + w] - g[i - w];
+    gh[Math.min(511, Math.round(Math.sqrt(gx * gx + gy * gy)))]++; n++;
+  }
+  let s = 0, g995 = 0; for (let v = 0; v < 512; v++) {s += gh[v]; if (s >= n * .995) {g995 = v; break}}
+  if (p99 < 100) return {short: 'too dark', text: 'too dark. Turn on a light or move to a brighter spot.'};
+  if (range < 40) return {short: 'washed out', text: 'washed out. Tilt the phone to avoid glare.'};
+  if (g995 / range < 0.5) return {short: 'blurry', text: 'blurry. Hold the phone steady and tap the screen to focus.'};
+  return null;
+}
+function checkQuality(canvas){
+  try {
+    const w = Math.min(640, canvas.width), h = Math.round(canvas.height * w / canvas.width);
+    const t = document.createElement('canvas'); t.width = w; t.height = h;
+    const x = t.getContext('2d'); x.drawImage(canvas, 0, 0, w, h);
+    const px = x.getImageData(0, 0, w, h).data, g = new Uint8Array(w * h);
+    for (let i = 0; i < g.length; i++) g[i] = 0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2];
+    return analyzeGray(g, w, h);
+  } catch(e) {return null}   // if the check itself fails, never block the driver
+}
+function stamp(file){
+  return new Promise((ok, no) => {
+    const img = new Image(), u = URL.createObjectURL(file);
+    img.onload = () => {
+      const sc = Math.min(1, 900 / Math.max(img.width, img.height)), w = Math.round(img.width * sc), h = Math.round(img.height * sc);
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const x = c.getContext('2d'); x.drawImage(img, 0, 0, w, h);
+      const warn = checkQuality(c);   // checked before the date stamp is drawn on it
+      const t = new Date(), label = t.toLocaleDateString('en-GB') + ' ' + t.toTimeString().slice(0, 8);
+      const fs = Math.max(14, Math.round(w / 26)), pad = Math.round(fs / 2);
+      x.font = 'bold ' + fs + 'px sans-serif'; x.textBaseline = 'middle';
+      x.fillStyle = 'rgba(0,0,0,.65)'; x.fillRect(0, h - fs - pad * 2, x.measureText(label).width + pad * 2, fs + pad * 2);
+      x.fillStyle = '#ffd23f'; x.fillText(label, pad, h - fs / 2 - pad);
+      URL.revokeObjectURL(u); ok({url: c.toDataURL('image/jpeg', 0.6), label, warn, ok: false});
+    };
+    img.onerror = () => {URL.revokeObjectURL(u); no()};
+    img.src = u;
+  });
+}
+function pv(key){
+  const p = photos[key]; if (!p) return '';
+  const note = !p.warn ? '<div class="muted">✓ Photo looks clear</div>'
+    : p.ok ? '<div class="muted">Using this photo anyway</div>'
+    : `<div class="warn">⚠ This photo looks ${esc(p.warn.text)}<div class="row2" style="margin-top:10px"><button type="button" class="big ghost" style="margin:0;min-height:46px" onclick="$('pf_${key}').click()">Retake</button><button type="button" class="big ghost" style="margin:0;min-height:46px" onclick="useAnyway('${key}')">Use anyway</button></div></div>`;
+  return `<img src="${p.url}" alt="Photo"><div class="muted">Stamped ${esc(p.label)}</div>${note}`;
+}
+function useAnyway(key){photos[key].ok = true; $('pv_' + key).innerHTML = pv(key)}
+function photoField(key, label, req){
+  return `<label>${label}${req ? '' : ' (optional)'}</label><div class="photo">
+    <input id="pf_${key}" type="file" accept="image/*" capture="environment" hidden onchange="pick('${key}')">
+    <button type="button" class="big ghost" style="margin-top:0" onclick="$('pf_${key}').click()">📷 ${photos[key] ? 'Retake photo' : 'Take photo'}</button>
+    <div id="pv_${key}">${pv(key)}</div></div>`;
+}
+async function pick(key){
+  const f = $('pf_' + key).files[0]; if (!f) return;
+  try {photos[key] = await stamp(f); $('pv_' + key).innerHTML = pv(key)}
+  catch(e) {toast('Could not read the photo, try again')}
+}
+
+/* ---------- forms in a full-screen modal ---------- */
+const TITLES = {CheckIn:'Daily check-in', Expense:'Report expense', ExtraTrip:'Extra / other trip', Issues:'Report a problem', Feedback:'Tell us what is confusing'};
+const when = dt => {const y = new Date(Date.now() - 864e5 - new Date().getTimezoneOffset() * 6e4).toISOString().slice(0, 10); return dt === todayStr() ? 'today' : dt === y ? 'yesterday' : 'on ' + dt};
+const CATS = ['Fuel', 'Maintenance', 'Tyre', 'Other'];
+/** Picks the bus automatically: running trip, then next scheduled trip, then the bus used last time. */
+function busInfo(k){
+  const ok = b => b && S.buses.includes(b);
+  if (k === 'CheckIn' && S.lastCheckIn && ok(S.lastCheckIn.Bus)) return [S.lastCheckIn.Bus, 'Same bus as your check-in ' + when(S.lastCheckIn.Date)];
+  const run_ = S.trips.find(x => x.Status === 'In Progress' && ok(x.Bus));
+  if (run_) return [run_.Bus, 'Auto-selected: your trip in progress'];
+  const next = S.trips.find(x => x.Status === 'Scheduled' && ok(x.Bus));
+  if (next) return [next.Bus, 'Auto-selected: your next scheduled trip'];
+  const last = store.get('ava_bus');
+  if (ok(last)) return [last, 'Auto-selected: the bus you used last'];
+  return [S.buses[0] || '', ''];
+}
+function busField(k){
+  const [b, why] = busInfo(k), chip = k === 'CheckIn' && /^Same bus/.test(why);
+  const sel = `<select id="f_bus" onchange="busSel()">${S.buses.map(x => `<option ${x === b ? 'selected' : ''}>${esc(x)}</option>`).join('')}<option value="__other__">Other bus (type number)…</option></select>
+    <input id="f_busx" type="text" maxlength="30" autocapitalize="characters" placeholder="Type bus number, e.g. DXB 12345" style="display:none;margin-top:8px">
+    <div class="muted" id="f_why" style="margin-top:4px">${esc(why)}</div>`;
+  return `<label>Bus number</label>` + (chip
+    ? `<div class="chip" id="f_chip"><b>${esc(b)}</b><span>${esc(why)}</span><button type="button" onclick="changeBus()">Change</button></div><div id="f_selwrap" style="display:none">${sel}</div>`
+    : sel);
+}
+function changeBus(){$('f_chip').style.display = 'none'; $('f_selwrap').style.display = 'block'}
+function odoHint(){
+  const el = $('odo_hint'); if (!el) return;
+  const l = (S.lastOdo || {})[getBus()];
+  el.textContent = l ? 'Last reading: ' + l.toLocaleString() + ' km' : '';
+}
+function busSel(){
+  const o = $('f_bus').value === '__other__';
+  $('f_busx').style.display = o ? 'block' : 'none'; $('f_why').style.display = o ? 'none' : 'block';
+  if (o) $('f_busx').focus();
+  odoHint();
+}
+function getBus(){
+  const raw = $('f_bus').value === '__other__' ? $('f_busx').value.trim() : $('f_bus').value;
+  const key = s => String(s).replace(/\s+/g, '').toUpperCase();
+  return S.buses.find(b => key(b) === key(raw)) || raw;   // typed text that matches a known bus becomes that bus
+}
+function openForm(k){
+  M = {k, cat: 'Fuel'}; photos = {}; if (k !== 'Feedback') SCREEN = TITLES[k];
+  $('modal').style.display = 'block'; document.body.style.overflow = 'hidden';
+  $('modal').innerHTML = `<div class="bar"><b>${TITLES[k]}</b><button onclick="closeForm()">Close</button></div><form onsubmit="submitForm(event)" id="frm"></form>`;
+  buildForm(); $('modal').scrollTop = 0;
+}
+function closeForm(){M = null; photos = {}; $('modal').style.display = 'none'; document.body.style.overflow = ''; home()}
+function buildForm(){
+  const k = M.k; let h = k === 'Feedback' ? '' : busField(k);
+  if (k === 'CheckIn') h += `<label>Odometer reading (km)</label><input id="f_odo" type="number" inputmode="numeric" required><div class="muted" id="odo_hint" style="margin-top:4px"></div>` + photoField('odo', 'Odo photo', true) + `<button class="big">Submit check-in</button>`;
+  if (k === 'Expense') h += `<label>Expense type</label><div class="seg" id="seg">${CATS.map(c => `<button type="button" class="${c === M.cat ? 'on' : ''}" onclick="setCat('${c}')">${c}</button>`).join('')}</div><div id="xf"></div>
+    <label>Details</label><input id="f_notes" type="text" maxlength="200" placeholder="Station name, route, what was done…">` + photoField('rec', 'Receipt photo', false) + `<button class="big">Save expense</button>`;
+  if (k === 'ExtraTrip') h += `<label>Description note</label><input id="f_desc" type="text" maxlength="200" required placeholder="Special run, pickup, diversion…">
+    <div class="row2"><div><label>Date</label><input id="f_date" type="date" value="${todayStr()}" required></div><div><label>Time</label><input id="f_time" type="time" value="${nowHM()}" required></div></div>
+    <label>From</label><input id="f_from" type="text" maxlength="80" required placeholder="Sharjah Industrial">
+    <label>To</label><input id="f_to" type="text" maxlength="80" required placeholder="Jebel Ali">
+    <label>Details (optional)</label><input id="f_det" type="text" maxlength="200"><button class="big">Save trip</button>`;
+  if (k === 'Feedback') h += `<label>What was confusing, slow or not working?</label><textarea id="f_msg" required placeholder="Tell us in your own words. The screen you were on is added automatically."></textarea><button class="big">Send</button>`;
+  if (k === 'Issues') h += `<label>What is the problem?</label><textarea id="f_issue" required></textarea><button class="big">Send report</button>`;
+  $('frm').innerHTML = h;
+  if (k === 'Expense') xFields();
+  if (k === 'CheckIn') {odoHint(); if ($('f_chip')) $('f_odo').focus()}
+}
+function setCat(c){
+  M.cat = c; [...$('seg').children].forEach(b => b.classList.toggle('on', b.textContent === c)); xFields();
+}
+function xFields(){
+  setTimeout(odoHint, 0);
+  $('xf').innerHTML = M.cat === 'Fuel'
+    ? `<label>Odometer at fueling (km)</label><input id="x_odo" type="number" inputmode="numeric" required><div class="muted" id="odo_hint" style="margin-top:4px"></div>
+       <label>Fuel pumped (liters)</label><input id="x_l" type="number" inputmode="decimal" step="any" required oninput="calc()">
+       <label>Price per liter (AED)</label><input id="x_p" type="number" inputmode="decimal" step="any" required oninput="calc()">
+       <label>Total amount (AED)</label><input id="x_t" readonly placeholder="Calculated automatically">`
+    : `<label>Amount (AED)</label><input id="x_a" type="number" inputmode="decimal" step="any" required>`;
+}
+function calc(){const l = +$('x_l').value, p = +$('x_p').value; $('x_t').value = l && p ? (l * p).toFixed(2) : ''}
+
+function submitForm(e){
+  e.preventDefault();
+  if (M.k === 'Feedback') {
+    let errs = ''; try {errs = JSON.parse(store.get('ava_errs') || '[]').join(' | ')} catch(x) {}
+    const rid = uid(), obj = {Date: todayStr(), Time: nowHM(), Message: $('f_msg').value, Screen: SCREEN, Device: navigator.userAgent.slice(0, 150), Version: APP_VERSION, Errors: errs};
+    if (!setQ(Q().concat({t:'add', k: 'Feedback', obj, rid}))) return toast('Phone storage is full. Connect and sync first.');
+    addLog(rid, 'Feedback sent'); toast('Thank you. We will look at it.'); closeForm(); status(); sync(); return;
+  }
+  const k = M.k, bus = getBus(), obj = {Bus: bus, Date: todayStr(), Time: nowHM()};
+  if (k === 'CheckIn') {
+    if (!photos.odo) return toast('Please take the odometer photo');
+    Object.assign(obj, {Odometer: $('f_odo').value, OdoPhoto: photos.odo.url});
+  } else if (k === 'Expense') {
+    Object.assign(obj, {Category: M.cat, Notes: $('f_notes').value, Receipt: photos.rec ? photos.rec.url : ''});
+    if (M.cat === 'Fuel') Object.assign(obj, {Odometer: $('x_odo').value, Liters: $('x_l').value, Price: $('x_p').value});
+    else obj.Amount = $('x_a').value;
+  } else if (k === 'ExtraTrip') {
+    Object.assign(obj, {Date: $('f_date').value, Time: $('f_time').value, Description: $('f_desc').value, From: $('f_from').value, To: $('f_to').value, Details: $('f_det').value});
+  } else {
+    obj.Issue = $('f_issue').value;
+  }
+  const used = [];
+  for (const key of ['odo', 'rec']) {
+    const p = photos[key]; if (!p || !p.warn) continue;
+    if (!p.ok) return toast('The photo looks ' + p.warn.short + '. Retake it or tap Use anyway.');
+    used.push(p.warn.short);
+  }
+  if (used.length) obj.PhotoWarn = used.join(', ');
+  if (!bus) return toast('Enter the bus number');
+  const fuel = k === 'Expense' && M.cat === 'Fuel', odo = (k === 'CheckIn' || fuel) ? +obj.Odometer : null;
+  if (odo !== null) {
+    if (!(odo > 0)) return toast('Enter the odometer reading');
+    const last = (S.lastOdo || {})[bus] || 0;
+    if (odo < last) return toast('Odometer is lower than the last reading (' + last.toLocaleString() + ' km). Please check.');
+    if (last && odo - last > 1500 && !confirm('This is ' + (odo - last).toLocaleString() + ' km more than the last reading. Is it correct?')) return;
+  }
+  let label = 'Problem reported';
+  if (k === 'CheckIn') label = 'Check-in · ' + bus + ' · ' + odo.toLocaleString() + ' km';
+  if (k === 'ExtraTrip') label = 'Extra trip · ' + obj.From + ' → ' + obj.To;
+  if (k === 'Expense' && !fuel) label = M.cat + ' · AED ' + (+obj.Amount).toFixed(2);
+  if (fuel) {
+    const l = +obj.Liters, p = +obj.Price;
+    if (!(l > 0 && l <= 300)) return toast('Liters must be between 1 and 300');
+    if ((p < 1 || p > 10) && !confirm('Price per liter AED ' + p + ' looks unusual. Is it correct?')) return;
+    label = 'Fuel · ' + bus + ' · ' + l + ' L · AED ' + (Math.round(l * p * 100) / 100).toFixed(2);
+  }
+  const rid = uid();
+  if (!setQ(Q().concat({t:'add', k, obj, rid}))) return toast('Phone storage is full. Connect and sync first.');
+  addLog(rid, label);
+  if (odo) {S.lastOdo = S.lastOdo || {}; S.lastOdo[bus] = odo}
+  if (k === 'CheckIn') S.lastCheckIn = {Bus: bus, Date: obj.Date, Odometer: odo};
+  cache();
+  store.set('ava_bus', bus);
+  toast(navigator.onLine ? 'Saved' : 'Saved on phone, will sync when online');
+  closeForm(); status(); sync();
+}
+/* ---------- installable + offline app shell ---------- */
+let deferred = null;
+window.addEventListener('beforeinstallprompt', e => {e.preventDefault(); deferred = e; $('inst').style.display = ''});
+window.addEventListener('appinstalled', () => {$('inst').style.display = 'none'; deferred = null});
+function installApp(){if (deferred) {deferred.prompt(); deferred = null; $('inst').style.display = 'none'}}
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});   // ask the phone not to wipe saved entries
+init();
+</script>
+</body>
+</html>
